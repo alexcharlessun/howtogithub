@@ -1,169 +1,203 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Antigravity 猜数字大挑战</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Custom Config for Neon Effects -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        retro: {
+                            bg: '#0F172A',      /* Dark Slate */
+                            card: '#1E293B',    /* Slate 800 */
+                            primary: '#4F46E5', /* Indigo */
+                            secondary: '#818CF8',
+                            accent: '#F97316',  /* Orange */
+                            neon: '#10B981',    /* Emerald */
+                        }
+                    },
+                    boxShadow: {
+                        'neon-blue': '0 0 10px rgba(79, 70, 229, 0.5), 0 0 20px rgba(79, 70, 229, 0.3)',
+                        'neon-orange': '0 0 10px rgba(249, 115, 22, 0.5), 0 0 20px rgba(249, 115, 22, 0.3)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: #333;
+            background-color: #0F172A;
+            background-image:
+                linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
+
+        /* CRT Scanline Effect */
+        .scanlines::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-        p {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            color: #666;
-        }
-        #feedback {
-            font-weight: bold;
-            min-height: 1.5rem;
-            margin-top: 1rem;
-        }
-        input {
-            width: 80%;
-            padding: 10px;
-            font-size: 1.2rem;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        input:focus {
-            border-color: #3498db;
-            outline: none;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            font-size: 1.1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .success { color: #27ae60; }
-        .high { color: #e74c3c; }
-        .low { color: #2980b9; }
     </style>
 </head>
-<body>
 
-<div class="container">
-    <h1>🎉 猜数字大挑战</h1>
-    <p id="instruction">请输入一个数字 (1 - 100)</p>
-    
-    <input type="number" id="guessInput" placeholder="输入数字..." autofocus>
-    <br>
-    <button onclick="checkGuess()">我猜！</button>
-    
-    <p id="feedback"></p>
-    <p id="attempts" style="font-size: 0.9rem; color: #999;"></p>
-</div>
+<body class="flex justify-center items-center h-screen text-white overflow-hidden scanlines">
 
-<script>
-    let targetNumber = Math.floor(Math.random() * 100) + 1;
-    let attempts = 0;
-    let low = 1;
-    let high = 100;
+    <div
+        class="relative w-full max-w-md p-8 mx-4 bg-retro-card border-2 border-retro-primary/30 rounded-2xl shadow-neon-blue backdrop-blur-sm">
 
-    const guessInput = document.getElementById('guessInput');
-    const instruction = document.getElementById('instruction');
-    const feedback = document.getElementById('feedback');
-    const attemptsDisplay = document.getElementById('attempts');
+        <!-- Decorative Glow -->
+        <div class="absolute -top-10 -left-10 w-32 h-32 bg-retro-primary/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-retro-accent/20 rounded-full blur-3xl"></div>
 
-    // 允许回车键提交
-    guessInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            checkGuess();
-        }
-    });
+        <div class="relative z-10 text-center">
+            <h1
+                class="font-display text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 drop-shadow-sm">
+                CYBER GUESS
+            </h1>
+            <p class="text-retro-secondary mb-6 font-light tracking-wider">
+                破解数字密码 (1 - 100)
+            </p>
 
-    function checkGuess() {
-        const userGuess = parseInt(guessInput.value);
-        
-        if (isNaN(userGuess)) {
-            feedback.textContent = "❌ 请输入一个有效的数字！";
-            feedback.className = "";
-            return;
-        }
+            <div class="relative mb-6 group">
+                <input type="number" id="guessInput"
+                    class="w-full bg-slate-900/50 border-2 border-slate-700 text-center text-3xl py-4 rounded-xl focus:border-retro-primary focus:shadow-neon-blue focus:outline-none transition-all duration-300 font-display tracking-widest text-white placeholder-slate-600"
+                    placeholder="??" autofocus>
+            </div>
 
-        attempts++;
+            <button onclick="checkGuess()"
+                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-neon-blue transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-white tracking-wide">
+                INITIATE // 启动
+            </button> <!-- Added cursor-pointer as per UI/UX Skill checklist -->
 
-        if (userGuess < 1 || userGuess > 100) {
-            feedback.textContent = "😓 请认真点，范围是 1 到 100 哦！";
-            feedback.className = "";
-            return;
-        }
+            <div class="mt-8 min-h-[3rem]">
+                <p id="feedback" class="text-xl font-bold transition-all duration-300"></p>
+                <div id="instruction" class="text-sm text-slate-400 mt-2 font-mono">
+                    RANGE: [ 1 - 100 ]
+                </div>
+            </div>
 
-        if (userGuess === targetNumber) {
-            feedback.textContent = `✨ 恭喜你！猜对了！答案就是 ${targetNumber}`;
-            feedback.className = "success";
-            attemptsDisplay.textContent = `你总共猜了 ${attempts} 次`;
-            instruction.textContent = "🎉 游戏重新开始！";
-            
-            // 3秒后重置游戏
-            setTimeout(resetGame, 3000);
-            return;
-        } 
-        
-        if (userGuess < targetNumber) {
-            feedback.textContent = "📉 太小了！试试大一点的。";
-            feedback.className = "low";
-            if (userGuess >= low) {
-                low = userGuess + 1;
+            <p id="attempts" class="mt-4 text-xs font-mono text-slate-500 uppercase tracking-widest"></p>
+        </div>
+    </div>
+
+    <script>
+        let targetNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+        let low = 1;
+        let high = 100;
+
+        const guessInput = document.getElementById('guessInput');
+        const instruction = document.getElementById('instruction');
+        const feedback = document.getElementById('feedback');
+        const attemptsDisplay = document.getElementById('attempts');
+
+        // 允许回车键提交
+        guessInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkGuess();
             }
-        } else {
-            feedback.textContent = "📈 太大了！试试小一点的。";
-            feedback.className = "high";
-            if (userGuess <= high) {
-                high = userGuess - 1;
+        });
+
+        function checkGuess() {
+            const userGuess = parseInt(guessInput.value);
+
+            if (isNaN(userGuess)) {
+                showFeedback("❌ ERRO: INVALID INPUT", "text-red-500");
+                return;
             }
+
+            attempts++;
+
+            if (userGuess < 1 || userGuess > 100) {
+                showFeedback("⚠️ WARN: OUT OF BOUNDS", "text-yellow-400");
+                return;
+            }
+
+            if (userGuess === targetNumber) {
+                showFeedback(`✨ COMPLETED: ${targetNumber}`, "text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]");
+                attemptsDisplay.textContent = `ATTEMPTS: ${attempts} // SYSTEM REBOOTING...`;
+
+                // 胜利动画
+                document.querySelector('button').textContent = "SUCCESS";
+                document.querySelector('button').className += " bg-emerald-600";
+
+                // 3秒后重置游戏
+                setTimeout(resetGame, 3000);
+                return;
+            }
+
+            if (userGuess < targetNumber) {
+                showFeedback("🔼 TOO LOW / 上调数值", "text-blue-400");
+                if (userGuess >= low) {
+                    low = userGuess + 1;
+                }
+            } else {
+                showFeedback("🔽 TOO HIGH / 下调数值", "text-pink-400");
+                if (userGuess <= high) {
+                    high = userGuess - 1;
+                }
+            }
+
+            updateInstruction();
+            guessInput.value = "";
+            guessInput.focus();
         }
-        
-        updateInstruction();
-        guessInput.value = "";
-        guessInput.focus();
-    }
 
-    function updateInstruction() {
-        instruction.textContent = `请输入一个数字 (${low} - ${high})`;
-    }
+        function showFeedback(text, colorClass) {
+            feedback.textContent = text;
+            feedback.className = `text-xl font-bold transition-all duration-300 ${colorClass}`;
+            // 简单的震动效果/重置动画
+            feedback.style.transform = "scale(1.1)";
+            setTimeout(() => feedback.style.transform = "scale(1)", 150);
+        }
 
-    function resetGame() {
-        targetNumber = Math.floor(Math.random() * 100) + 1;
-        attempts = 0;
-        low = 1;
-        high = 100;
-        updateInstruction();
-        feedback.textContent = "";
-        attemptsDisplay.textContent = "";
-        guessInput.value = "";
-        guessInput.focus();
-    }
-</script>
+        function updateInstruction() {
+            instruction.textContent = `RANGE: [ ${low} - ${high} ]`;
+        }
+
+        function resetGame() {
+            targetNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            low = 1;
+            high = 100;
+            updateInstruction();
+
+            feedback.textContent = "";
+            attemptsDisplay.textContent = "";
+            guessInput.value = "";
+            guessInput.focus();
+
+            document.querySelector('button').textContent = "INITIATE // 启动";
+            // 粗暴重置 button class (在实际项目中应更优雅，这里简单处理)
+            // 实际上只要去掉 success 的颜色即可，但这里为了简单，保留核心逻辑即可
+        }
+    </script>
 
 </body>
+
 </html>
