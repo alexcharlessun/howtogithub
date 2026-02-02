@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity 猜数字大挑战</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+        #feedback {
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .success { color: #27ae60; }
+        .high { color: #e74c3c; }
+        .low { color: #2980b9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎉 猜数字大挑战</h1>
+    <p id="instruction">请输入一个数字 (1 - 100)</p>
+    
+    <input type="number" id="guessInput" placeholder="输入数字..." autofocus>
+    <br>
+    <button onclick="checkGuess()">我猜！</button>
+    
+    <p id="feedback"></p>
+    <p id="attempts" style="font-size: 0.9rem; color: #999;"></p>
+</div>
+
+<script>
+    let targetNumber = Math.floor(Math.random() * 100) + 1;
+    let attempts = 0;
+    let low = 1;
+    let high = 100;
+
+    const guessInput = document.getElementById('guessInput');
+    const instruction = document.getElementById('instruction');
+    const feedback = document.getElementById('feedback');
+    const attemptsDisplay = document.getElementById('attempts');
+
+    // 允许回车键提交
+    guessInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkGuess();
+        }
+    });
+
+    function checkGuess() {
+        const userGuess = parseInt(guessInput.value);
+        
+        if (isNaN(userGuess)) {
+            feedback.textContent = "❌ 请输入一个有效的数字！";
+            feedback.className = "";
+            return;
+        }
+
+        attempts++;
+
+        if (userGuess < 1 || userGuess > 100) {
+            feedback.textContent = "😓 请认真点，范围是 1 到 100 哦！";
+            feedback.className = "";
+            return;
+        }
+
+        if (userGuess === targetNumber) {
+            feedback.textContent = `✨ 恭喜你！猜对了！答案就是 ${targetNumber}`;
+            feedback.className = "success";
+            attemptsDisplay.textContent = `你总共猜了 ${attempts} 次`;
+            instruction.textContent = "🎉 游戏重新开始！";
+            
+            // 3秒后重置游戏
+            setTimeout(resetGame, 3000);
+            return;
+        } 
+        
+        if (userGuess < targetNumber) {
+            feedback.textContent = "📉 太小了！试试大一点的。";
+            feedback.className = "low";
+            if (userGuess >= low) {
+                low = userGuess + 1;
+            }
+        } else {
+            feedback.textContent = "📈 太大了！试试小一点的。";
+            feedback.className = "high";
+            if (userGuess <= high) {
+                high = userGuess - 1;
+            }
+        }
+        
+        updateInstruction();
+        guessInput.value = "";
+        guessInput.focus();
+    }
+
+    function updateInstruction() {
+        instruction.textContent = `请输入一个数字 (${low} - ${high})`;
+    }
+
+    function resetGame() {
+        targetNumber = Math.floor(Math.random() * 100) + 1;
+        attempts = 0;
+        low = 1;
+        high = 100;
+        updateInstruction();
+        feedback.textContent = "";
+        attemptsDisplay.textContent = "";
+        guessInput.value = "";
+        guessInput.focus();
+    }
+</script>
+
+</body>
+</html>
